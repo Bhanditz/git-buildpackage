@@ -27,6 +27,7 @@ from gbp.paths import to_bin
 from gbp.pkg.git import PkgGitRepository
 
 import gbp.log
+import distro_info
 
 
 class DebianGitRepository(PkgGitRepository):
@@ -101,6 +102,31 @@ class DebianGitRepository(PkgGitRepository):
                     return self.rev_parse("%s^0" % legacy_tag)
                 elif line.startswith('---'):  # GPG signature start
                     return None
+        return None
+
+    @staticmethod
+    def vendor_from_git_branch(branchname):
+        """
+        Get the vendor from the branchname.
+
+
+        >>> DebianGitRepository.vendor_from_git_branch('debian/master')
+        'debian'
+        >>> DebianGitRepository.vendor_from_git_branch('ubuntu/master')
+        'ubuntu'
+        >>> DebianGitRepository.vendor_from_git_branch('master') is None
+        True
+        >>> DebianGitRepository.vendor_from_git_branch('weirdtestdistro/master') is None
+        True
+        """
+        if "/" in branchname:
+            vendor, release = branchname.split("/", 1)
+
+            if vendor == "upstream":
+                raise GitRepositoryError("On an upstream branch, can't figure out distribution")
+
+            return vendor
+
         return None
 
     def debian_version_from_upstream(self, upstream_tag_format,

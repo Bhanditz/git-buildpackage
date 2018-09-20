@@ -475,6 +475,11 @@ def main(argv):
             gbp.log.err("You are not on branch '%s' but on '%s'" % (options.debian_branch, branch))
             raise GbpError("Use --ignore-branch to ignore or --debian-branch to set the branch name.")
 
+        if branch:
+            vendor = repo.vendor_from_git_branch(branch)
+            if vendor:
+                os.environ["DEB_VENDOR"] = vendor
+
         source = DebianSource('.')
         cp = maybe_create_changelog(repo, source, options)
 
